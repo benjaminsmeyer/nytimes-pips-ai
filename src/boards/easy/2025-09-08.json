@@ -1,0 +1,103 @@
+{
+    "id": 34,
+    "constructors": "Rodolfo Kurchan",
+    "dominoes": [
+        [
+            2,
+            1
+        ],
+        [
+            2,
+            2
+        ],
+        [
+            1,
+            4
+        ]
+    ],
+    "regions": [
+        {
+            "indices": [
+                [
+                    0,
+                    0
+                ]
+            ],
+            "type": "greater",
+            "target": 2
+        },
+        {
+            "indices": [
+                [
+                    0,
+                    1
+                ]
+            ],
+            "type": "empty"
+        },
+        {
+            "indices": [
+                [
+                    1,
+                    0
+                ]
+            ],
+            "type": "empty"
+        },
+        {
+            "indices": [
+                [
+                    2,
+                    0
+                ],
+                [
+                    3,
+                    0
+                ]
+            ],
+            "type": "equals"
+        },
+        {
+            "indices": [
+                [
+                    3,
+                    1
+                ]
+            ],
+            "type": "less",
+            "target": 2
+        }
+    ],
+    "solution": [
+        [
+            [
+                3,
+                0
+            ],
+            [
+                3,
+                1
+            ]
+        ],
+        [
+            [
+                1,
+                0
+            ],
+            [
+                2,
+                0
+            ]
+        ],
+        [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                0
+            ]
+        ]
+    ]
+}
