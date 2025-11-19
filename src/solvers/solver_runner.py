@@ -105,7 +105,7 @@ def batch_solve(difficulty: str, limit: int = 5, timeout: float = 10.0) -> List[
         result['date'] = date
         result['difficulty'] = difficulty
         
-        status = "✓" if result['success'] else "✗"
+        status = "Success" if result['success'] else "Failed"
         print(f" {status} ({result.get('time_taken', 0):.2f}s)")
         
         results.append(result)
