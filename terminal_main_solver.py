@@ -3,8 +3,8 @@
 Main entry point for the NYTimes Pips AI Solver.
 
 Usage:
-    python main.py solve <difficulty> <date> [--timeout T]
-    python main.py batch <difficulty> [--limit N] [--timeout T]
+    python terminal_main_solver.py solve <difficulty> <date> [--timeout T]
+    python terminal_main_solver.py batch <difficulty> [--limit N] [--timeout T]
 """
 import argparse
 import sys
