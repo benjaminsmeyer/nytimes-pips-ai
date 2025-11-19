@@ -20,14 +20,14 @@ def cmd_solve(args):
     result = solve_puzzle(args.difficulty, args.date, timeout=args.timeout)
     
     if result['success']:
-        print("\n✅ Solution found!")
+        print("\nSolution found!")
         print(f"Time: {result['time_taken']:.4f}s")
         print(f"Stats: {result['stats']}")
         print("\nMoves:")
         for move in result['solution']:
             print(f"  Place {move['domino']} at {move['pos1']}-{move['pos2']}")
     else:
-        print("\n❌ Failed to solve.")
+        print("\nFailed to solve.")
         print(f"Error: {result.get('error', 'Unknown')}")
         if 'stats' in result:
             print(f"Stats: {result['stats']}")
