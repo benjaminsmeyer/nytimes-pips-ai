@@ -3,8 +3,8 @@
 Main entry point for the NYTimes Pips AI Solver.
 
 Usage:
-    python main.py solve <difficulty> <date>
-    python main.py batch <difficulty> [--limit N]
+    python main.py solve <difficulty> <date> [--timeout T]
+    python main.py batch <difficulty> [--limit N] [--timeout T]
 """
 import argparse
 import sys
@@ -47,13 +47,13 @@ def main():
     solve_parser = subparsers.add_parser("solve", help="Solve a single puzzle")
     solve_parser.add_argument("difficulty", choices=["easy", "medium", "hard"], help="Puzzle difficulty")
     solve_parser.add_argument("date", help="Puzzle date (YYYY-MM-DD)")
-    solve_parser.add_argument("--timeout", type=float, default=30.0, help="Solver timeout in seconds")
+    solve_parser.add_argument("--timeout", type=float, default=10000.0, help="Solver timeout in seconds (default: 10000 seconds)")
     
     # Batch command
     batch_parser = subparsers.add_parser("batch", help="Run batch verification")
     batch_parser.add_argument("difficulty", choices=["easy", "medium", "hard"], help="Puzzle difficulty")
-    batch_parser.add_argument("--limit", type=int, default=5, help="Number of puzzles to solve")
-    batch_parser.add_argument("--timeout", type=float, default=10.0, help="Timeout per puzzle")
+    batch_parser.add_argument("--limit", type=int, default=5, help="Number of puzzles to solve (default: 5)")
+    batch_parser.add_argument("--timeout", type=float, default=10000.0, help="Timeout per puzzle (default: 10000 seconds)")
     
     args = parser.parse_args()
     
