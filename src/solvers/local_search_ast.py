@@ -4,13 +4,7 @@ import math
 from typing import List, Tuple, Dict, Optional
 from src.core.board import Board
 from src.core.domino import Domino
-from src.core.region import (
-    SumRegion,
-    EqualRegion,
-    NotEqualRegion,
-    GreaterThanRegion,
-    LessThanRegion
-)
+from src.core.region import SumRegion, EqualRegion, NotEqualRegion, GreaterThanRegion, LessThanRegion
 import random
 
 # local search solver for pips json format
