@@ -1,8 +1,16 @@
 # local search - aarushi
 import time
+import math
 from typing import List, Tuple, Dict, Optional
 from src.core.board import Board
 from src.core.domino import Domino
+from src.core.region import (
+    SumRegion,
+    EqualRegion,
+    NotEqualRegion,
+    GreaterThanRegion,
+    LessThanRegion
+)
 import random
 
 # local search solver for pips json format
@@ -31,130 +39,60 @@ class LocalSearchSolver:
         max_restarts = 5  # fewer restarts, more iterations per restart
         iterations_per_restart = self.max_iterations // max_restarts
         
+        # try multiple restarts with complete random placements
         for restart in range(max_restarts):
             # clone board - don't modify original
             working_board = board.clone()
             
-            # initial random placement
-            self._random_initial_placement(working_board)
+            # fill board completely with random valid tiling
+            if not self._random_initial_placement(working_board):
+                continue  # failed to create valid tiling, try again
             
-            current_reward = self._calculate_reward(working_board)
-            best_reward = current_reward
+            current_cost = self._calculate_cost(working_board)
+            best_cost = current_cost
             best_board = working_board.clone()
             
-            # simulated annealing parameters
-            initial_temp = 2000.0  # even higher temp to allow more exploration
-            cooling_rate = 0.998  # slower cooling
-            temperature = initial_temp
+            if best_cost == 0:
+                return self._extract_solution(best_board), self.stats
             
-            no_improvement_count = 0
-            max_no_improvement = iterations_per_restart // 2  # be more persistent before restarting
-
+            # simulated annealing parameters
+            temperature = 100.0
+            cooling_rate = 0.995
+            
             iterations = 0
             while (time.time() - self.start_time < self.timeout and 
-                   iterations < iterations_per_restart):
+                   iterations < iterations_per_restart and
+                   temperature > 0.1):
                 
                 if working_board.is_complete() and working_board.is_valid_state():
                     return self._extract_solution(working_board), self.stats
-
-                # select a random conflict and try to resolve it
-                conflict = self._get_random_conflict(working_board)
-                if conflict:
-                    old_reward = current_reward
-                    old_board_state = working_board.clone()
+                
+                # generate neighbor state
+                neighbor_board = self._get_neighbor(working_board)
+                neighbor_cost = self._calculate_cost(neighbor_board)
+                
+                # simulated annealing acceptance
+                delta = neighbor_cost - current_cost
+                
+                if delta < 0 or random.random() < math.exp(-delta / temperature):
+                    working_board = neighbor_board
+                    current_cost = neighbor_cost
                     
-                    self._resolve_conflict(working_board, conflict)
-                    new_reward = self._calculate_reward(working_board)
-                    self.stats['nodes_explored'] += 1
-                    
-                    # simulated annealing: accept better moves, sometimes accept worse
-                    delta = new_reward - old_reward
-                    accept = False
-                    
-                    if delta > 0:
-                        # better move (higher reward) - always accept
-                        accept = True
-                        current_reward = new_reward
-                        if new_reward > best_reward:
-                            best_reward = new_reward
-                            best_board = working_board.clone()
-                            no_improvement_count = 0
-                    elif temperature > 0:
-                        # worse move - accept with probability based on temperature
-                        import math
-                        # for negative delta, we want lower probability
-                        prob = math.exp(delta / temperature)  # delta is negative, so this is < 1
-                        if random.random() < prob:
-                            accept = True
-                            current_reward = new_reward
-                    
-                    if not accept:
-                        # revert to old state
-                        working_board = old_board_state
-                        current_reward = old_reward
-                    else:
-                        no_improvement_count = 0 if delta > 0 else no_improvement_count + 1
-                    
-                    # cool down temperature
-                    temperature *= cooling_rate
-                else:
-                    # if no conflicts found but board not complete, try to fill empty spaces
-                    if not working_board.is_complete():
-                        empty_positions = self._get_empty_positions(working_board)
-                        if len(empty_positions) >= 2:
-                            # try multiple placements to find one that improves reward
-                            random.shuffle(empty_positions)
-                            best_placement_reward = current_reward
-                            best_placement = None
-                            
-                            # try up to 10 pairs of adjacent empty positions
-                            for i in range(min(10, len(empty_positions) - 1)):
-                                pos1 = empty_positions[i]
-                                # find adjacent empty cell
-                                row, col = pos1
-                                neighbors = [(row-1, col), (row+1, col), (row, col-1), (row, col+1)]
-                                for pos2 in neighbors:
-                                    if pos2 in empty_positions and self._are_adjacent(pos1, pos2):
-                                        if working_board.available_dominoes:
-                                            # try a few dominoes
-                                            available = list(working_board.available_dominoes)
-                                            random.shuffle(available)
-                                            for domino in available[:5]:
-                                                if working_board.place_domino(domino, pos1, pos2):
-                                                    reward = self._calculate_reward(working_board)
-                                                    if reward > best_placement_reward:
-                                                        best_placement_reward = reward
-                                                        best_placement = (domino, pos1, pos2)
-                                                    working_board.remove_domino(pos1, pos2)
-                            
-                            # place the best option found
-                            if best_placement and best_placement_reward > current_reward:
-                                domino, pos1, pos2 = best_placement
-                                working_board.place_domino(domino, pos1, pos2)
-                                current_reward = best_placement_reward
-                                if current_reward > best_reward:
-                                    best_reward = current_reward
-                                    best_board = working_board.clone()
-                                    no_improvement_count = 0
-                            elif empty_positions and working_board.available_dominoes:
-                                # fallback: just place something
-                                pos1, pos2 = empty_positions[0], empty_positions[1]
-                                if self._are_adjacent(pos1, pos2):
-                                    domino = random.choice(list(working_board.available_dominoes))
-                                    if working_board.place_domino(domino, pos1, pos2):
-                                        current_reward = self._calculate_reward(working_board)
-
-                # restart if stuck for too long
-                if no_improvement_count > max_no_improvement:
-                    # restore best state before restarting
-                    working_board = best_board
-                    break
-
+                    if current_cost < best_cost:
+                        best_cost = current_cost
+                        best_board = working_board.clone()
+                        self.stats['nodes_explored'] += 1
+                        
+                        if best_cost == 0:
+                            return self._extract_solution(best_board), self.stats
+                
+                # cool down
+                temperature *= cooling_rate
                 iterations += 1
             
             self.stats['restarts'] = restart + 1
             
-            # check if we found a solution in best state
+            # check best state from this restart
             if best_board.is_complete() and best_board.is_valid_state():
                 return self._extract_solution(best_board), self.stats
 
@@ -168,44 +106,44 @@ class LocalSearchSolver:
                 empty.append(cell)
         return empty
     
-    # initial positions - places fewer dominoes to start, builds up gradually
-    def _random_initial_placement(self, board: Board):
+    # initial positions - fill board completely with random valid tiling
+    def _random_initial_placement(self, board: Board) -> bool:
+        """Fill board completely with random valid domino tiling using backtracking."""
         empty_positions = self._get_empty_positions(board)
-        random.shuffle(empty_positions)
         
-        # start with fewer placements - maybe 25-50% of board
-        target_placements = max(1, len(empty_positions) // 4)  # start with 25% filled
-        placed_count = 0
+        if not empty_positions:
+            return True  # already filled
         
-        for i in range(0, len(empty_positions) - 1, 2):
-            if placed_count >= target_placements:
-                break
+        # pick first empty cell
+        cell = empty_positions[0]
+        row, col = cell
+        
+        # find valid adjacent neighbors
+        neighbors = [
+            (row, col + 1),  # Right
+            (row + 1, col),  # Down
+            (row, col - 1),  # Left
+            (row - 1, col)   # Up
+        ]
+        random.shuffle(neighbors)
+        
+        for neighbor in neighbors:
+            if neighbor in board._valid_cells and board.is_cell_empty(*neighbor):
+                # try random available dominoes
+                available = list(board.available_dominoes)
+                if not available:
+                    return False
                 
-            pos1 = empty_positions[i]
-            pos2 = empty_positions[i + 1]
-            
-            # check if positions are adjacent
-            if self._are_adjacent(pos1, pos2):
-                if board.available_dominoes:
-                    # try multiple dominoes to find one that keeps board solvable
-                    available = list(board.available_dominoes)
-                    random.shuffle(available)
-                    
-                    placed = False
-                    for domino in available[:10]:  # try up to 10 dominoes
-                        if board.place_domino(domino, pos1, pos2):
-                            # check if board is still solvable
-                            if board.can_satisfy_constraints() and not board.has_isolated_cells():
-                                placed_count += 1
-                                placed = True
-                                break
-                            else:
-                                # undo if not solvable
-                                board.remove_domino(pos1, pos2)
-                    
-                    if not placed:
-                        # if we can't place here, skip this pair
-                        continue
+                random.shuffle(available)
+                for domino in available:
+                    if board.place_domino(domino, cell, neighbor):
+                        # recursively fill rest of board
+                        if self._random_initial_placement(board):
+                            return True
+                        # backtrack
+                        board.remove_domino(cell, neighbor)
+        
+        return False
     
     # check if positions are adjacent (perpendicular)
     def _are_adjacent(self, pos1: Tuple[int, int], pos2: Tuple[int, int]) -> bool:
@@ -213,45 +151,217 @@ class LocalSearchSolver:
         row2, col2 = pos2
         return (row1 == row2 and abs(col1 - col2) == 1) or (col1 == col2 and abs(row1 - row2) == 1)
     
-    # find random conflict on board
-    def _get_random_conflict(self, board: Board) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
+    # generate neighbor state by modifying board
+    def _get_neighbor(self, board: Board) -> Board:
+        """Generate neighbor by swapping, flipping, or retiling dominoes."""
+        neighbor = board.clone()
+        
+        move_type = random.random()
+        
+        if move_type < 0.4:
+            self._swap_dominoes(neighbor)
+        elif move_type < 0.7:
+            self._flip_domino(neighbor)
+        else:
+            self._retile_dominoes(neighbor)
+        
+        return neighbor
+    
+    def _swap_dominoes(self, board: Board):
+        """Swap two random dominoes (their values, not positions)."""
+        if len(board._placed_dominoes) < 2:
+            return
+        
+        id1, id2 = random.sample(list(board._placed_dominoes.keys()), 2)
+        pos1_a, pos1_b = board._placed_dominoes[id1]
+        pos2_a, pos2_b = board._placed_dominoes[id2]
+        
+        # get values
+        val1_a = board.get_cell_value(*pos1_a)
+        val1_b = board.get_cell_value(*pos1_b)
+        val2_a = board.get_cell_value(*pos2_a)
+        val2_b = board.get_cell_value(*pos2_b)
+        
+        # remove both
+        board.remove_domino(pos1_a, pos1_b)
+        board.remove_domino(pos2_a, pos2_b)
+        
+        # swap: place d2 at pos1, d1 at pos2
+        d1 = Domino(val1_a, val1_b)
+        d2 = Domino(val2_a, val2_b)
+        
+        board.place_domino(d2, pos1_a, pos1_b)
+        board.place_domino(d1, pos2_a, pos2_b)
+    
+    def _flip_domino(self, board: Board):
+        """Flip a random domino (swap its two values)."""
         if not board._placed_dominoes:
-            return None
+            return
         
-        # get all placed domino positions
-        placed_positions = []
-        for domino_id, (pos1, pos2) in board._placed_dominoes.items():
-            placed_positions.append((pos1, pos2))
+        domino_id = random.choice(list(board._placed_dominoes.keys()))
+        pos_a, pos_b = board._placed_dominoes[domino_id]
         
-        if not placed_positions:
-            return None
+        val_a = board.get_cell_value(*pos_a)
+        val_b = board.get_cell_value(*pos_b)
         
-        # checks constraints, find violations
+        if val_a == val_b:
+            return  # no point flipping a double
+        
+        board.remove_domino(pos_a, pos_b)
+        new_domino = Domino(val_b, val_a)
+        board.place_domino(new_domino, pos_a, pos_b)
+    
+    def _retile_dominoes(self, board: Board):
+        """Retile two adjacent parallel dominoes (rotate 2x2 block)."""
+        if len(board._placed_dominoes) < 2:
+            return
+        
+        # pick random domino
+        id1 = random.choice(list(board._placed_dominoes.keys()))
+        pos1_a, pos1_b = board._placed_dominoes[id1]
+        
+        # determine orientation
+        is_horizontal = pos1_a[0] == pos1_b[0]
+        
+        # find adjacent parallel domino
+        row, col = pos1_a
+        c1 = min(pos1_a[1], pos1_b[1])
+        c2 = max(pos1_a[1], pos1_b[1])
+        r1 = min(pos1_a[0], pos1_b[0])
+        r2 = max(pos1_a[0], pos1_b[0])
+        
+        candidates = []
+        
+        if is_horizontal:
+            # look for horizontal domino below or above
+            if row + 1 < board.rows:
+                val_a, id_a = board._grid.get((row+1, c1), (-1, None))
+                val_b, id_b = board._grid.get((row+1, c2), (-1, None))
+                if id_a is not None and id_a == id_b and id_a != id1:
+                    candidates.append(id_a)
+            if row - 1 >= 0:
+                val_a, id_a = board._grid.get((row-1, c1), (-1, None))
+                val_b, id_b = board._grid.get((row-1, c2), (-1, None))
+                if id_a is not None and id_a == id_b and id_a != id1:
+                    candidates.append(id_a)
+        else:
+            # look for vertical domino left or right
+            if col + 1 < board.cols:
+                val_a, id_a = board._grid.get((r1, col+1), (-1, None))
+                val_b, id_b = board._grid.get((r2, col+1), (-1, None))
+                if id_a is not None and id_a == id_b and id_a != id1:
+                    candidates.append(id_a)
+            if col - 1 >= 0:
+                val_a, id_a = board._grid.get((r1, col-1), (-1, None))
+                val_b, id_b = board._grid.get((r2, col-1), (-1, None))
+                if id_a is not None and id_a == id_b and id_a != id1:
+                    candidates.append(id_a)
+        
+        if not candidates:
+            return
+        
+        id2 = random.choice(candidates)
+        pos2_a, pos2_b = board._placed_dominoes[id2]
+        
+        # get values
+        val1_a = board.get_cell_value(*pos1_a)
+        val1_b = board.get_cell_value(*pos1_b)
+        val2_a = board.get_cell_value(*pos2_a)
+        val2_b = board.get_cell_value(*pos2_b)
+        
+        # remove both
+        board.remove_domino(pos1_a, pos1_b)
+        board.remove_domino(pos2_a, pos2_b)
+        
+        # rotate: if horizontal, make vertical and vice versa
+        cells = sorted([pos1_a, pos1_b, pos2_a, pos2_b])
+        
+        if is_horizontal:
+            # new vertical pairs
+            new_pos1_a = cells[0]  # top-left
+            new_pos1_b = cells[2]  # bottom-left
+            new_pos2_a = cells[1]  # top-right
+            new_pos2_b = cells[3]  # bottom-right
+        else:
+            # new horizontal pairs
+            new_pos1_a = cells[0]  # top-left
+            new_pos1_b = cells[1]  # top-right
+            new_pos2_a = cells[2]  # bottom-left
+            new_pos2_b = cells[3]  # bottom-right
+        
+        # place with same dominoes
+        d1 = Domino(val1_a, val1_b)
+        d2 = Domino(val2_a, val2_b)
+        
+        if board.place_domino(d1, new_pos1_a, new_pos1_b):
+            if not board.place_domino(d2, new_pos2_a, new_pos2_b):
+                # revert
+                board.remove_domino(new_pos1_a, new_pos1_b)
+                board.place_domino(d1, pos1_a, pos1_b)
+                board.place_domino(d2, pos2_a, pos2_b)
+        else:
+            # revert
+            board.place_domino(d1, pos1_a, pos1_b)
+            board.place_domino(d2, pos2_a, pos2_b)
+    
+    # calculate cost for board state - lower is better (0 = solved)
+    def _calculate_cost(self, board: Board) -> float:
+        """Calculate total cost (constraint violations). Lower is better, 0 = perfect."""
+        total_cost = 0.0
+        
+        # get cell values
         cell_values = {}
-        for pos, (value, domino_id) in board._grid.items():
+        for pos, (value, _) in board._grid.items():
             if value != -1:
                 cell_values[pos] = value
         
-        # find regions with violations
-        violating_regions = []
+        # calculate cost for each region
         for region in board.regions:
-            if not region.validate(cell_values):
-                violating_regions.append(region)
+            total_cost += self._calculate_region_cost(region, cell_values)
         
-        # if violation, pick random domino from incorrect region
-        if violating_regions:
-            region = random.choice(violating_regions)
-            region_cells = [cell for cell in region.cells if cell in cell_values]
-            if region_cells:
-                # find a domino that covers one of these cells
-                for pos1, pos2 in placed_positions:
-                    if pos1 in region_cells or pos2 in region_cells:
-                        return (pos1, pos2)
-        
-        # if no clear violations, just pick a random placed domino
-        return random.choice(placed_positions)
+        return total_cost
     
-    # calculate reward for board state - higher is better
+    def _calculate_region_cost(self, region, cell_values: Dict) -> float:
+        """Calculate cost for a single region."""
+        # if region not complete, return high cost
+        if not all(cell in cell_values for cell in region.cells):
+            return 100.0
+        
+        values = [cell_values[cell] for cell in region.cells]
+        
+        if isinstance(region, SumRegion):
+            current_sum = sum(values)
+            return abs(current_sum - region.target)
+        
+        elif isinstance(region, EqualRegion):
+            if not values:
+                return 0
+            # cost = number of values that don't match the most common
+            counts = {}
+            for v in values:
+                counts[v] = counts.get(v, 0) + 1
+            most_common_count = max(counts.values())
+            return len(values) - most_common_count
+        
+        elif isinstance(region, NotEqualRegion):
+            # cost = number of duplicates
+            return len(values) - len(set(values))
+        
+        elif isinstance(region, GreaterThanRegion):
+            current_sum = sum(values)
+            if current_sum > region.threshold:
+                return 0
+            return region.threshold - current_sum + 1
+        
+        elif isinstance(region, LessThanRegion):
+            current_sum = sum(values)
+            if current_sum < region.threshold:
+                return 0
+            return current_sum - region.threshold + 1
+        
+        return 0.0
+    
+    # calculate reward for board state - higher is better (for compatibility)
     def _calculate_reward(self, board: Board) -> float:
         reward = 0.0
         cell_values = {}
