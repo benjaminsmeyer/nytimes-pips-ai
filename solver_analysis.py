@@ -35,7 +35,7 @@ class SolverAnalyzer:
         sns.set_theme(style="whitegrid")
         plt.rcParams['figure.figsize'] = [12, 8]
         
-    def run_analysis(self, limit_per_difficulty: int = 100, runs_per_puzzle: int = 100):
+    def run_analysis(self, limit_per_difficulty: int = 75, runs_per_puzzle: int = 10):
         """Run full analysis suite on all puzzles"""        
         results = []
         
