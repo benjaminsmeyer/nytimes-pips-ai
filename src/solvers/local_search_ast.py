@@ -102,7 +102,6 @@ class LocalSearchSolver:
     
     # initial positions - fill board completely with random valid tiling
     def _random_initial_placement(self, board: Board) -> bool:
-        """Fill board completely with random valid domino tiling using backtracking."""
         empty_positions = self._get_empty_positions(board)
         
         if not empty_positions:
@@ -146,8 +145,8 @@ class LocalSearchSolver:
         return (row1 == row2 and abs(col1 - col2) == 1) or (col1 == col2 and abs(row1 - row2) == 1)
     
     # generate neighbor state by modifying board
+    # neighboring state - swaps, flips, or retiles dominoes
     def _get_neighbor(self, board: Board) -> Board:
-        """Generate neighbor by swapping, flipping, or retiling dominoes."""
         neighbor = board.clone()
         
         move_type = random.random()
@@ -161,8 +160,8 @@ class LocalSearchSolver:
         
         return neighbor
     
+    # swap two random dominoes
     def _swap_dominoes(self, board: Board):
-        """Swap two random dominoes (their values, not positions)."""
         if len(board._placed_dominoes) < 2:
             return
         
@@ -187,8 +186,8 @@ class LocalSearchSolver:
         board.place_domino(d2, pos1_a, pos1_b)
         board.place_domino(d1, pos2_a, pos2_b)
     
+    # flip random domino
     def _flip_domino(self, board: Board):
-        """Flip a random domino (swap its two values)."""
         if not board._placed_dominoes:
             return
         
@@ -205,8 +204,8 @@ class LocalSearchSolver:
         new_domino = Domino(val_b, val_a)
         board.place_domino(new_domino, pos_a, pos_b)
     
+    # rotate two dominos
     def _retile_dominoes(self, board: Board):
-        """Retile two adjacent parallel dominoes (rotate 2x2 block)."""
         if len(board._placed_dominoes) < 2:
             return
         
@@ -300,7 +299,6 @@ class LocalSearchSolver:
     
     # calculate cost for board state - lower is better (0 = solved)
     def _calculate_cost(self, board: Board) -> float:
-        """Calculate total cost (constraint violations). Lower is better, 0 = perfect."""
         total_cost = 0.0
         
         # get cell values
@@ -315,8 +313,8 @@ class LocalSearchSolver:
         
         return total_cost
     
+    # calculates cost for a single region
     def _calculate_region_cost(self, region, cell_values: Dict) -> float:
-        """Calculate cost for a single region."""
         # if region not complete, return high cost
         if not all(cell in cell_values for cell in region.cells):
             return 100.0
