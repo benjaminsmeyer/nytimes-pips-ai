@@ -17,14 +17,16 @@ class CSPSolver:
     - Constraint propagation (via board.has_isolated_cells)
     """
     
-    def __init__(self, timeout: float = 30.0):
+    def __init__(self, timeout: float = 30.0, verbose: bool = False):
         """
         Initialize solver.
         
         Args:
             timeout: Maximum time in seconds to search
+            verbose: Whether to print debug info
         """
         self.timeout = timeout
+        self.verbose = verbose
         self.start_time = 0.0
         self.stats = {
             'nodes_explored': 0,
@@ -80,19 +82,22 @@ class CSPSolver:
         # Check if complete
         if board.is_complete():
             valid = board.is_valid_state()
-            print(f"{indent}Complete. Valid: {valid}")
+            if self.verbose:
+                print(f"{indent}Complete. Valid: {valid}")
             return valid
         
         # Pruning: Check if constraints can still be satisfied
         if not board.can_satisfy_constraints():
             self.stats['backtracks'] += 1
-            print(f"{indent}Pruned: Constraints not satisfiable")
+            if self.verbose:
+                print(f"{indent}Pruned: Constraints not satisfiable")
             return False
             
         # Pruning: Check for isolated cells
         if board.has_isolated_cells():
             self.stats['backtracks'] += 1
-            print(f"{indent}Pruned: Isolated cells")
+            if self.verbose:
+                print(f"{indent}Pruned: Isolated cells")
             return False
         
         # Select an empty cell (Variable Ordering)
@@ -100,7 +105,8 @@ class CSPSolver:
         if not target_cell:
             return board.is_valid_state()
             
-        print(f"{indent}Target: {target_cell}")
+        if self.verbose:
+            print(f"{indent}Target: {target_cell}")
         
         row, col = target_cell
         neighbors = [
@@ -119,7 +125,8 @@ class CSPSolver:
         
         if not valid_neighbors:
             self.stats['backtracks'] += 1
-            print(f"{indent}Backtrack: No valid neighbors for {target_cell}")
+            if self.verbose:
+                print(f"{indent}Backtrack: No valid neighbors for {target_cell}")
             return False
             
         # Try each neighbor
@@ -135,7 +142,8 @@ class CSPSolver:
                     orientations.append(Domino(domino.right, domino.left))
                 
                 for d in orientations:
-                    print(f"{indent}Trying {d} at {target_cell}-{neighbor}")
+                    if self.verbose:
+                        print(f"{indent}Trying {d} at {target_cell}-{neighbor}")
                     if board.place_domino(d, target_cell, neighbor):
                         if self._backtrack(board, depth + 1):
                             return True

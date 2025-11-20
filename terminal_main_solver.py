@@ -16,8 +16,8 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from src.solvers.solver_runner import solve_puzzle, batch_solve
 
 def cmd_solve(args):
-    print(f"Solving {args.difficulty} puzzle for {args.date}...")
-    result = solve_puzzle(args.difficulty, args.date, timeout=args.timeout)
+    print(f"Solving {args.difficulty} puzzle for {args.date} using {args.solver}...")
+    result = solve_puzzle(args.difficulty, args.date, timeout=args.timeout, solver_type=args.solver, verbose=args.verbose)
     
     if result['success']:
         print("\nSolution found!")
@@ -33,8 +33,8 @@ def cmd_solve(args):
             print(f"Stats: {result['stats']}")
 
 def cmd_batch(args):
-    print(f"Running batch test for {args.difficulty} (limit={args.limit})...")
-    results = batch_solve(args.difficulty, limit=args.limit, timeout=args.timeout)
+    print(f"Running batch test for {args.difficulty} (limit={args.limit}) using {args.solver}...")
+    results = batch_solve(args.difficulty, limit=args.limit, timeout=args.timeout, solver_type=args.solver, verbose=args.verbose)
     
     solved = sum(1 for r in results if r['success'])
     print(f"\nSummary: {solved}/{len(results)} solved.")
@@ -48,12 +48,16 @@ def main():
     solve_parser.add_argument("difficulty", choices=["easy", "medium", "hard"], help="Puzzle difficulty")
     solve_parser.add_argument("date", help="Puzzle date (YYYY-MM-DD)")
     solve_parser.add_argument("--timeout", type=float, default=10000.0, help="Solver timeout in seconds (default: 10000 seconds)")
+    solve_parser.add_argument("--solver", choices=["csp", "local_search"], default="csp", help="Solver algorithm to use (default: csp)")
+    solve_parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     
     # Batch command
     batch_parser = subparsers.add_parser("batch", help="Run batch verification")
     batch_parser.add_argument("difficulty", choices=["easy", "medium", "hard"], help="Puzzle difficulty")
     batch_parser.add_argument("--limit", type=int, default=5, help="Number of puzzles to solve (default: 5)")
     batch_parser.add_argument("--timeout", type=float, default=10000.0, help="Timeout per puzzle (default: 10000 seconds)")
+    batch_parser.add_argument("--solver", choices=["csp", "local_search"], default="csp", help="Solver algorithm to use (default: csp)")
+    batch_parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     
     args = parser.parse_args()
     
