@@ -28,7 +28,11 @@ def cmd_solve(args):
     # error handling
     else:
         print("\nFailed to solve.")
-        print(f"Error: {result.get('error', 'Unknown')}")
+        error_msg = result.get('error', 'Unknown')
+        print(f"Error: {error_msg}")
+        if 'traceback' in result:
+            print("\nTraceback:")
+            print(result['traceback'])
         if 'stats' in result:
             print(f"Stats: {result['stats']}")
 

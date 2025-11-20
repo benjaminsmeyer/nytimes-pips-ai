@@ -50,9 +50,11 @@ def solve_puzzle(difficulty: str, date: str, timeout: float = 30.0, max_iteratio
         }
         
     except Exception as e:
+        import traceback
         return {
             'success': False,
-            'error': str(e)
+            'error': str(e) or 'Unknown',
+            'traceback': traceback.format_exc()
         }
 
 # batch solve - solves multiple puzzles of an inputted difficulty level
