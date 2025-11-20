@@ -7,12 +7,13 @@ import time
 from pathlib import Path
 from typing import Dict, Optional, Tuple, List
 
-from src.api import create_board_from_json, BOARDS_DIR
+from src.core.loader import create_board_from_json, BOARDS_DIR
 from src.solvers.csp_solver import CSPSolver
+from src.solvers.local_search_solver import LocalSearchSolver
 from src.core.board import Board
 from src.core.domino import Domino
 
-def solve_puzzle(difficulty: str, date: str, timeout: float = 30.0) -> Dict:
+def solve_puzzle(difficulty: str, date: str, timeout: float = 30.0, solver_type: str = 'csp', verbose: bool = False) -> Dict:
     """
     Load and solve a specific puzzle.
     
@@ -20,6 +21,8 @@ def solve_puzzle(difficulty: str, date: str, timeout: float = 30.0) -> Dict:
         difficulty: 'easy', 'medium', 'hard'
         date: 'YYYY-MM-DD'
         timeout: Max seconds to search
+        solver_type: 'csp' or 'local_search'
+        verbose: Whether to print debug info
         
     Returns:
         Dict with results:
@@ -44,7 +47,11 @@ def solve_puzzle(difficulty: str, date: str, timeout: float = 30.0) -> Dict:
             
         board = create_board_from_json(board_data)
         
-        solver = CSPSolver(timeout=timeout)
+        if solver_type == 'local_search':
+            solver = LocalSearchSolver(timeout=timeout, verbose=verbose)
+        else:
+            solver = CSPSolver(timeout=timeout, verbose=verbose)
+            
         start_time = time.time()
         solution, stats = solver.solve(board)
         duration = time.time() - start_time
@@ -75,7 +82,7 @@ def solve_puzzle(difficulty: str, date: str, timeout: float = 30.0) -> Dict:
             'error': str(e)
         }
 
-def batch_solve(difficulty: str, limit: int = 5, timeout: float = 10.0) -> List[Dict]:
+def batch_solve(difficulty: str, limit: int = 5, timeout: float = 10.0, solver_type: str = 'csp', verbose: bool = False) -> List[Dict]:
     """
     Solve multiple puzzles of a given difficulty.
     
@@ -83,6 +90,8 @@ def batch_solve(difficulty: str, limit: int = 5, timeout: float = 10.0) -> List[
         difficulty: 'easy', 'medium', 'hard'
         limit: Max number of puzzles to attempt
         timeout: Timeout per puzzle
+        solver_type: 'csp' or 'local_search'
+        verbose: Whether to print debug info
         
     Returns:
         List of result dicts
@@ -95,13 +104,13 @@ def batch_solve(difficulty: str, limit: int = 5, timeout: float = 10.0) -> List[
         
     files = sorted(list(difficulty_dir.glob("*.json")))[:limit]
     
-    print(f"Solving {len(files)} {difficulty} puzzles...")
+    print(f"Solving {len(files)} {difficulty} puzzles using {solver_type}...")
     
     for file_path in files:
         date = file_path.stem
         print(f"  Solving {date}...", end="", flush=True)
         
-        result = solve_puzzle(difficulty, date, timeout)
+        result = solve_puzzle(difficulty, date, timeout, solver_type, verbose)
         result['date'] = date
         result['difficulty'] = difficulty
         
