@@ -136,10 +136,14 @@ class SumRegion(Region):
             return False
         
         remaining_cells = len(self.cells) - len(values)
+        needed_sum = self.target - current_sum
+        
         if remaining_cells == 0:
             return current_sum == self.target
-        
-        needed_sum = self.target - current_sum
+            
+        if remaining_cells == 1:
+            # Exact match required
+            return needed_sum in available_pips
         
         # Check if we have enough high values to reach target
         sorted_pips = sorted(available_pips, reverse=True)
