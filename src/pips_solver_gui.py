@@ -181,14 +181,14 @@ class PipsSolverGUI:
 
         # Solve button
         self.solve_button = ttk.Button(
-            control_frame, text="🚀 Solve Puzzle",
+            control_frame, text="Solve Puzzle",
             command=self.solve_puzzle, style="Accent.TButton"
         )
         self.solve_button.grid(row=9, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(10, 5))
 
         # Stop button (initially disabled)
         self.stop_button = ttk.Button(
-            control_frame, text="⏹ Stop",
+            control_frame, text="Stop",
             command=self.stop_solving, state="disabled"
         )
         self.stop_button.grid(row=10, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
@@ -418,8 +418,8 @@ class PipsSolverGUI:
 
         if solution:
             self.solution = solution
-            self.log_message(f"\n✓ Solution found in {duration:.3f}s!", "success")
-            self.status_var.set("✓ Solved!")
+            self.log_message(f"\n Solution found in {duration:.3f}s!", "success")
+            self.status_var.set("Solved!")
 
             # Apply solution to board for visualization
             for pos1, pos2, domino in solution:
@@ -428,7 +428,7 @@ class PipsSolverGUI:
             self.visualize_board()
 
         else:
-            self.log_message(f"\n✗ No solution found within timeout", "error")
+            self.log_message(f"\n No solution found within timeout", "error")
             self.status_var.set("Failed to solve")
 
         # Log statistics
@@ -445,7 +445,7 @@ class PipsSolverGUI:
         self.stop_button.config(state="disabled")
         self.progress_bar.stop()
         self.status_var.set("Stopped by user")
-        self.log_message("\n⏹ Solving stopped by user", "warning")
+        self.log_message("\n Solving stopped by user", "warning")
 
     def _solve_error(self, error_msg):
         """Called when solving encounters an error."""
