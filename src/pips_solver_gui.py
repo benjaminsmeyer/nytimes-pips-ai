@@ -21,11 +21,11 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from src.core.board import Board
-from src.core.domino import Domino
-from src.core.loader import create_board_from_json, BOARDS_DIR
-from src.solvers.csp_solver import CSPSolver
-from src.solvers.local_search_solver import LocalSearchSolver
+from .core.board import Board
+from .core.domino import Domino
+from .core.loader import create_board_from_json, BOARDS_DIR
+from .solvers.csp_solver import CSPSolver
+from .solvers.local_search_solver import LocalSearchSolver
 
 
 class StoppableLocalSearchSolver(LocalSearchSolver):
