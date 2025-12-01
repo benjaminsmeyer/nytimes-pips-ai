@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **NYTimes Pips AI Solver** is a Python-based project designed to solve the "Pips" puzzle from the New York Times. It employs advanced Artificial Intelligence techniques, specifically **Constraint Satisfaction Problems (CSP)** and **Local Search (Simulated Annealing)**, to find valid domino placements that satisfy all board constraints.
+The **NYTimes Pips AI Solver** is a Python project designed to solve the "Pips" puzzle from the New York Times. It employs advanced Artificial Intelligence techniques, specifically **Constraint Satisfaction Problems (CSP)** and **Local Search (Simulated Annealing)**, to find valid domino placements that satisfy all board constraints.
 
 The project features a comprehensive **GUI** for interactive solving and visualization, **Command Line Interfaces (CLI)** for batch processing and quick solves, and a **Flask API** to serve puzzle data.
 
@@ -11,9 +11,9 @@ The project features a comprehensive **GUI** for interactive solving and visuali
 -   **AI Solvers**:
     -   **CSP Solver**: Uses backtracking with forward checking and heuristics (MRV, Degree) to guarantee a solution if one exists.
     -   **Local Search**: Implements Simulated Annealing to probabilistically find solutions, useful for larger or more complex state spaces.
--   **Interactive GUI**: A Tkinter-based graphical interface to load puzzles, visualize the board, watch the AI solve in real-time, and view statistics.
+-   **Interactive GUI**: A Tkinter graphical interface to load puzzles, visualize the board, watch the AI solve in real-time, and view statistics.
 -   **CLI Tools**: Dedicated command-line scripts for running both CSP and Local Search solvers on single puzzles or in batch mode.
--   **REST API**: A Flask application that provides puzzle data and board states in a JSON format suitable for external AI agents or front-ends.
+-   **REST API**: A Flask application that provides puzzle data and board states in a JSON format suitable for external AI agents or front-end applications.
 
 ## Directory Structure
 
@@ -25,8 +25,7 @@ The project features a comprehensive **GUI** for interactive solving and visuali
 │   ├── solvers/                # AI implementations (CSP, Local Search)
 │   ├── boards/                 # Database of puzzles (JSON format)
 │   └── pips_solver_gui.py      # Main GUI Application
-├── terminal_main_solver.py     # CLI entry point for CSP Solver
-├── terminal_main_local_search.py # CLI entry point for Local Search Solver
+├── terminal_main_solver.py     # CLI entry point for CSP and Local Search Solver
 ├── requirements.txt            # Project dependencies
 └── README.md                   # Project documentation
 ```
@@ -42,7 +41,7 @@ The project features a comprehensive **GUI** for interactive solving and visuali
 
 1.  **Clone the repository**:
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/benjaminsmeyer/nytimes-pips-ai.git
     cd nytimes-pips-ai
     ```
 
@@ -50,6 +49,13 @@ The project features a comprehensive **GUI** for interactive solving and visuali
     ```bash
     pip install -r requirements.txt
     ```
+
+3.  **Download puzzle data**:
+    ```bash
+    python src/fetch_pips_levels.py
+    ```
+
+This will create folders under `boards/` and populate them with JSON puzzle files.
 
 ## Usage
 
@@ -85,12 +91,12 @@ Run the probabilistic solver based on Simulated Annealing.
 
 -   **Solve a single puzzle**:
     ```bash
-    python terminal_main_local_search.py solve <difficulty> <date>
+    python terminal_main_solver.py solve <difficulty> <date> --solver local_search
     ```
 
 -   **Batch verification**:
     ```bash
-    python terminal_main_local_search.py batch <difficulty>
+    python terminal_main_solver.py batch <difficulty> --solver local_search
     ```
 
 ### 3. API
@@ -116,6 +122,5 @@ The Local Search solver starts with a random (potentially invalid) full board an
 -   **Cost Function**: Calculates a "energy" score based on violated constraints (e.g., region sums incorrect, duplicate dominoes).
 -   **Simulated Annealing**: Accepts worse moves with a probability that decreases over time (temperature), allowing it to escape local optima.
 
-## Contributing
-
-Contributions are welcome! Please fork the repository and submit a pull request for any enhancements or bug fixes.
+## Team Contributions
+Benjamin Meyer developed the core game logic and environment setup. Catherina Haast built the puzzle dataset through web scraping. Aarushi Thejaswi created the API connecting the dataset to game logic. Shuyan Ke designed the GUI visualization. Benjamin and Shuyan implemented the CSP solver, while Catherina and Aarushi developed the Local Search solver. All members collaborated on analyzing and comparing both solving approaches through performance plots.
