@@ -25,7 +25,7 @@ The project features a comprehensive **GUI** for interactive solving and visuali
 │   ├── solvers/                # AI implementations (CSP, Local Search)
 │   ├── boards/                 # Database of puzzles (JSON format)
 │   └── pips_solver_gui.py      # Main GUI Application
-├── main_solver.py     # CLI entry point for CSP and Local Search Solver
+├── main_solver.py              # CLI entry point for CSP and Local Search Solver
 ├── requirements.txt            # Project dependencies
 └── README.md                   # Project documentation
 ```
