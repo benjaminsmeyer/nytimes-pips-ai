@@ -25,7 +25,7 @@ The project features a comprehensive **GUI** for interactive solving and visuali
 │   ├── solvers/                # AI implementations (CSP, Local Search)
 │   ├── boards/                 # Database of puzzles (JSON format)
 │   └── pips_solver_gui.py      # Main GUI Application
-├── terminal_main_solver.py     # CLI entry point for CSP and Local Search Solver
+├── main_solver.py     # CLI entry point for CSP and Local Search Solver
 ├── requirements.txt            # Project dependencies
 └── README.md                   # Project documentation
 ```
@@ -77,13 +77,13 @@ Run the exact solver based on Constraint Satisfaction.
 
 -   **Solve a single puzzle**:
     ```bash
-    python terminal_main_solver.py solve <difficulty> <date>
-    # Example: python terminal_main_solver.py solve easy 2023-10-01
+    python main_solver.py solve <difficulty> <date>
+    # Example: python main_solver.py solve easy 2025-10-01
     ```
 
 -   **Batch verification**:
     ```bash
-    python terminal_main_solver.py batch <difficulty> --limit 5
+    python main_solver.py batch <difficulty> --limit 5
     ```
 
 #### Local Search Solver
@@ -91,23 +91,13 @@ Run the probabilistic solver based on Simulated Annealing.
 
 -   **Solve a single puzzle**:
     ```bash
-    python terminal_main_solver.py solve <difficulty> <date> --solver local_search
+    python main_solver.py solve <difficulty> <date> --solver local_search
     ```
 
 -   **Batch verification**:
     ```bash
-    python terminal_main_solver.py batch <difficulty> --solver local_search
+    python main_solver.py batch <difficulty> --solver local_search
     ```
-
-### 3. API
-
-Start the Flask server to access puzzle data programmatically.
-
-```bash
-python src/api.py
-```
--   **Get Puzzle**: `GET /api/puzzle/<difficulty>/<date>`
--   **List Puzzles**: `GET /api/puzzles?difficulty=<difficulty>`
 
 ## Solvers Detail
 
