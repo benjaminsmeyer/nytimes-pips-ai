@@ -2,9 +2,9 @@
 
 ## Overview
 
-The **NYTimes Pips AI Solver** is a Python project designed to solve the "Pips" puzzle from the New York Times. It employs advanced Artificial Intelligence techniques, specifically **Constraint Satisfaction Problems (CSP)** and **Local Search (Simulated Annealing)**, to find valid domino placements that satisfy all board constraints.
+The **NYTimes Pips AI Solver** is a Python project designed to solve the "Pips" puzzle from New York Times Games. It employs advanced Artificial Intelligence techniques, specifically **Constraint Satisfaction Problems (CSP)** and **Local Search (Simulated Annealing)**, to find valid domino placements that satisfy all board constraints.
 
-The project features a comprehensive **GUI** for interactive solving and visualization, **Command Line Interfaces (CLI)** for batch processing and quick solves, and a **Flask API** to serve puzzle data.
+The project features a comprehensive **GUI** for interactive solving and visualization, **Command Line Interfaces (CLI)** for batch processing and quick solves, and a **Flask API** to retrieve puzzle data.
 
 ## Features
 
