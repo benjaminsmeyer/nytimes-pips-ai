@@ -3,15 +3,16 @@
 This project provides a framework to analyze and solve the NYTimes Pips puzzle using 2 different AI techniques, Constraint Satisfaction Problem (CSP) and Local Search. It includes tools for fetching daily puzzles, organizing them by difficulty, and running solvers through terminal or GUI interfaces. The project is designed for studying algorithmic performance, automating puzzle solving, and exploring AI strategies.
 
 ## Features
--**Puzzle Fetching and Organization**
+- **Puzzle Fetching and Organization**
   - Downloads daily NYTimes Pips puzzles via their API.
   - Saves raw puzzle JSONs in boards/raw/.
   - Splits puzzle JSONs into difficulty levels: easy, medium, and hard.
   - Automates fetching over a range of dates using fetch_pips_levels.py.
--**Solver Framework**
+
+- **Solver Framework**
   - CSP-based solver for exact solutions.
   - Local search algorithms for heuristic-based solving.
-  - Terminal-based interfaces, terminal_main_solver.py and terminal_main_local_search.py, for running the solvers.
+  - Terminal-based interfaces (terminal_main_solver.py and terminal_main_local_search.py) for running the solvers.
   - Modular design allows adding new solver strategies easily.
 
 ## Team Contributions
