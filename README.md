@@ -64,11 +64,35 @@ This will create folders under `boards/` and populate them with JSON puzzle file
 The GUI is the best way to visualize the solving process.
 
 ```bash
-python src/pips_solver_gui.py
+python pips_solver_gui.py
 ```
 -   **Load Puzzle**: Select difficulty (easy, medium, hard) and date.
 -   **Solve**: Choose between "CSP" or "Local Search" and click "Solve Puzzle".
 -   **Visualize**: Watch the dominoes being placed in real-time.
+
+#### GUI Screenshots
+
+**Initial Interface**
+
+![GUI Initial State](images/gui_initial.png)
+
+**Puzzle Loaded**
+
+![Puzzle Loaded](images/puzzle_loaded.png)
+
+**CSP Performance**
+
+![CSP Solving](images/csp_performance.png)
+
+**Local Search Performance**
+
+![Local Search Solving](images/local_search_performance.png)
+
+#### Video Demonstration
+
+Watch the full GUI demonstration:
+
+[![Demo Video](https://img.youtube.com/vi/ME8ZCReth0w/0.jpg)](https://youtu.be/ME8ZCReth0w)
 
 ### 2. Command Line Interface (CLI)
 
